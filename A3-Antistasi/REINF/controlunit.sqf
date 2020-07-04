@@ -25,26 +25,37 @@ if (_x != vehicle _x) then
 } forEach units group player;
 
 _unit setVariable ["owner",player,true];
-_eh1 = player addEventHandler ["HandleDamage",
+
+_eh1 = player addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	//removeAllActions _unit;
-	selectPlayer _unit;
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
-	}];
-_eh2 = _unit addEventHandler ["HandleDamage",
+		_unit = _this #0;
+		_unit removeEventHandler ["HandleDamage",_thisEventHandler];
+		//removeAllActions _unit;
+		selectPlayer _unit;
+		(units group player) joinsilent group player;
+		group player selectLeader player;
+		["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
+		_this #2
+	}
+];
+
+_eh2 = _unit addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	removeAllActions _unit;
-	selectPlayer (_unit getVariable "owner");
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
-	}];
+		_unit = _this #0;
+		_unit removeEventHandler ["HandleDamage",_thisEventHandler];
+		removeAllActions _unit;
+		selectPlayer (_unit getVariable "owner");
+		(units group player) joinsilent group player;
+		group player selectLeader player;
+		["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
+		_this #2
+	}
+];
+
 selectPlayer _unit;
 
 _timeX = 60;
@@ -58,7 +69,6 @@ selectPlayer (_unit getVariable ["owner",_unit]);
 //_unit setVariable ["owner",nil,true];
 (units group player) joinsilent group player;
 group player selectLeader player;
-_unit removeEventHandler ["HandleDamage",_eh2];
-player removeEventHandler ["HandleDamage",_eh1];
+_unit removeEventHandler ["HandleDamage", _eh2];
+player removeEventHandler ["HandleDamage", _eh1];
 ["Control Unit", ""] call A3A_fnc_customHint;
-

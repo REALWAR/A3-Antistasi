@@ -27,26 +27,38 @@ hcShowBar false;
 hcShowBar true;
 
 _unit setVariable ["owner",player,true];
-_eh1 = player addEventHandler ["HandleDamage",
+
+_eh1 = player addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	//removeAllActions _unit;
-	selectPlayer _unit;
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Squad", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
-	}];
-_eh2 = _unit addEventHandler ["HandleDamage",
+
+		_unit = _this #0;
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+		//removeAllActions _unit;
+		selectPlayer _unit;
+		(units group player) joinsilent group player;
+		group player selectLeader player;
+		["Control Squad", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
+		_this #2
+	}
+];
+
+_eh2 = _unit addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	removeAllActions _unit;
-	selectPlayer (_unit getVariable "owner");
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Squad", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
-	}];
+		_unit = _this select 0;
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+		removeAllActions _unit;
+		selectPlayer (_unit getVariable "owner");
+		(units group player) joinsilent group player;
+		group player selectLeader player;
+		["Control Squad", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
+		_this #2
+	}
+];
+
 selectPlayer _unit;
 
 _timeX = 60;
@@ -63,4 +75,3 @@ player removeEventHandler ["HandleDamage",_eh1];
 (units group theBoss) joinsilent group theBoss;
 group theBoss selectLeader theBoss;
 ["Control Squad", ""] call A3A_fnc_customHint;
-
