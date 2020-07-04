@@ -14,43 +14,58 @@ petros addEventHandler
 [
     "HandleDamage",
     {
-    _part = _this select 1;
-    _damage = _this select 2;
-    _injurer = _this select 3;
+        _victim = _this #0;
+        _part = _this #1;
+        _damage = _this #2;
+        _injurer = _this #3;
+        _instigator = _this #6;
 
-    _victim = _this select 0;
-    _instigator = _this select 6;
-    if (isPlayer _injurer) then
-    {
-        _damage = (_this select 0) getHitPointDamage (_this select 7);
-    };
-    if ((isNull _injurer) or (_injurer == petros)) then {_damage = 0};
+        if (isPlayer _injurer) then
+        {
+            _damage = (_this #0) getHitPointDamage (_this #7);
+        };
+
+        if ((isNull _injurer) || {_injurer == petros}) then 
+        {
+            _damage = 0;
+        };
+
         if (_part == "") then
         {
             if (_damage > 1) then
             {
-                if (!(petros getVariable ["incapacitated",false])) then
+                if (!(petros getVariable ["incapacitated", false])) then
                 {
-                    petros setVariable ["incapacitated",true,true];
+                    petros setVariable ["incapacitated", true, true];
                     _damage = 0.9;
-                    if (!isNull _injurer) then {[petros,side _injurer] spawn A3A_fnc_unconscious} else {[petros,sideUnknown] spawn A3A_fnc_unconscious};
+
+                    if (!isNull _injurer) then 
+                    {
+                        [petros, side _injurer] spawn A3A_fnc_unconscious;
+                    } 
+                    else 
+                    {
+                        [petros, sideUnknown] spawn A3A_fnc_unconscious;
+                    };
                 }
                 else
                 {
-                    _overall = (petros getVariable ["overallDamage",0]) + (_damage - 1);
+                    _overall = (petros getVariable ["overallDamage", 0]) + (_damage - 1);
+
                     if (_overall > 1) then
                     {
                         petros removeAllEventHandlers "HandleDamage";
                     }
                     else
                     {
-                        petros setVariable ["overallDamage",_overall];
+                        petros setVariable ["overallDamage", _overall];
                         _damage = 0.9;
                     };
                 };
             };
         };
-    _damage;
+
+        _damage
     }
 ];
 

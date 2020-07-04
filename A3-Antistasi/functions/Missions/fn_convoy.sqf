@@ -257,7 +257,17 @@ if ((_convoyType == "Money") or (_convoyType == "Supplies")) then
 {
 	reportedVehs pushBack _vehObj;
 	publicVariable "reportedVehs";
-	_vehObj addEventHandler ["HandleDamage",{if (((_this select 1) find "wheel" != -1) and ((_this select 4=="") or (side (_this select 3) != teamPlayer)) and (!isPlayer driver (_this select 0))) then {0} else {(_this select 2)}}];
+	_vehObj addEventHandler
+	[
+		"HandleDamage",
+		{
+			if (((_this #1) find "wheel" != -1) && {
+				((_this #4 == "") || {side (_this #3) != teamPlayer}) && {
+				!(isPlayer driver (_this #0)) }})
+			then { 0 }
+			else { _this #2 }
+		}
+	];
 };
 
 // Tail escort
@@ -284,16 +294,16 @@ _route deleteAt 0;
 private _bonus = if (_difficult) then {2} else {1};
 private _distanceFromTargetForArrival = 200;
 
-private _fnc_applyResults = 
+private _fnc_applyResults =
 {
 	params ["_success", "_success1", "_adjustCA", "_adjustBoss", "_aggroMod", "_aggroTime", "_type"];
-	
+
 	_taskState = if (_success) then { "SUCCEEDED" } else { "FAILED" };
 	_taskState1 = if (_success1) then { "SUCCEEDED" } else { "FAILED" };
 
 	[_adjustCA, _sideX] remoteExec ["A3A_fnc_timingCA", 2];
 	[_adjustBoss, theBoss] call A3A_fnc_playerScoreAdd;
-	
+
 	if (_sideX == Occupants) then {
 		[[_aggroMod, _aggroTime], [0, 0]] remoteExec ["A3A_fnc_prestige", 2]
 	} else {

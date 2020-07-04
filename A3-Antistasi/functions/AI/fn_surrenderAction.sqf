@@ -18,7 +18,7 @@ _unit setVariable ["surrendered", true, true];			// usually set by caller, just 
 sleep 3;
 if (!alive _unit) exitWith {};
 if (lifeState _unit == "INCAPACITATED") exitWith {};
-[_unit,true] remoteExec ["setCaptive",0,_unit];
+[_unit, true] remoteExec ["setCaptive", 0, _unit];
 _unit setCaptive true;
 
 _unit allowDamage false;
@@ -27,13 +27,31 @@ unassignVehicle _unit;			// stop them getting back into vehicles
 _unit setUnitPos "UP";
 _unit playMoveNow "AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon";		// hands up?
 _unit setSpeaker "NoVoice";
-_unit addEventHandler ["HandleDamage",
+
+_unit addEventHandler [
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit enableAI "ANIM";
-	if (!simulationEnabled _unit) then {if (isMultiplayer) then {[_unit,true] remoteExec ["enableSimulationGlobal",2]} else {_unit enableSimulation true}};
+		_this spawn
+		{
+			_unit = _this #0;
+			_unit enableAI "ANIM";
+
+			if (!simulationEnabled _unit) then
+			{
+				if (isMultiplayer) then
+				{
+					[_unit, true] remoteExec ["enableSimulationGlobal", 2];
+				}
+				else
+				{
+					_unit enableSimulation true;
+				}
+			};
+		};
+
+		_this #2
 	}
-	];
+];
 
 // create surrender box
 private _boxX = "Box_IND_Wps_F" createVehicle position _unit;

@@ -23,16 +23,28 @@ private _side = side (group _unit);
 if (_type == "Fin_random_F") exitWith {};
 
 //Sets the EH for the unit
-_unit addEventHandler ["HandleDamage", A3A_fnc_handleDamageAAF];
-_unit addEventHandler ["killed", A3A_fnc_occupantInvaderUnitKilledEH];
+_unit addEventHandler
+[
+    "HandleDamage",
+    A3A_fnc_handleDamageAAF
+];
+
+_unit addEventHandler
+[
+    "killed",
+    {
+        _this spawn A3A_fnc_occupantInvaderUnitKilledEH
+    }
+];
 
 //Sets the most important variables to the unit
 if (_marker != "") then
 {
-    _unit setVariable ["markerX",_marker,true];
+    _unit setVariable ["markerX", _marker, true];
+
     if ((spawner getVariable _marker != 0) && {!(isNull objectParent _unit)}) then
     {
-        [_unit,false] remoteExec ["enableSimulationGlobal",2];
+        [_unit, false] remoteExec ["enableSimulationGlobal", 2];
     };
 }
 else
