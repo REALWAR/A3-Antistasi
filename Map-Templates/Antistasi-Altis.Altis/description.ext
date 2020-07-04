@@ -60,4 +60,11 @@ class CfgDebriefing
         picture = "b_unknown";
         pictureColor[] = {0.5,0.0,0.0,1};
     };
+    class Endts
+    {
+        title = "TeamSpeak IP:  realwar";
+        subtitle = "Вы не в Тимспике! Зайдите в наш Тимспик!";
+        description = "";
+        pictureColor[] = {0.0,0.5,0.0,1};
+    };
 };
