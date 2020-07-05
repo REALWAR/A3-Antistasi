@@ -133,6 +133,7 @@ else
 	};
 };
 
+// Civilians leave vehicles by damage from player side unit
 if (_side == civilian)
 then
 {

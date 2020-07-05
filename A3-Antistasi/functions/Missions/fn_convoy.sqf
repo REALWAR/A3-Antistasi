@@ -257,6 +257,7 @@ if ((_convoyType == "Money") or (_convoyType == "Supplies")) then
 {
 	reportedVehs pushBack _vehObj;
 	publicVariable "reportedVehs";
+
 	_vehObj addEventHandler
 	[
 		"HandleDamage",

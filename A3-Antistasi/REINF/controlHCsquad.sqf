@@ -7,20 +7,17 @@ _groups = _this select 0;
 _groupX = _groups select 0;
 _unit = leader _groupX;
 
-if !([_unit] call A3A_fnc_canFight) exitWith {["Control Squad", "You cannot control an unconscious or dead unit"] call A3A_fnc_customHint;};
+if !([_unit] call A3A_fnc_canFight)
+exitWith { ["Control Squad", "You cannot control an unconscious or dead unit"] call A3A_fnc_customHint; };
 
-while {(count (waypoints _groupX)) > 0} do
- {
-  deleteWaypoint ((waypoints _groupX) select 0);
- };
+while {(count (waypoints _groupX)) > 0}
+do { deleteWaypoint ((waypoints _groupX) select 0); };
 
 _wp = _groupX addwaypoint [getpos _unit,0];
 
 {
-if (_x != vehicle _x) then
-	{
-	[_x] orderGetIn true;
-	};
+	if (_x != vehicle _x)
+	then { [_x] orderGetIn true; };
 } forEach units group player;
 
 hcShowBar false;
@@ -68,7 +65,10 @@ _unit addAction ["Return Control to AI",{selectPlayer (player getVariable ["owne
 waitUntil {sleep 1;["Control Squad", format ["Time to return control to AI: %1", _timeX]] call A3A_fnc_customHint; _timeX = _timeX - 1; (_timeX < 0) or (isPlayer theBoss)};
 
 removeAllActions _unit;
-if (!isPlayer (_unit getVariable ["owner",_unit])) then {selectPlayer (_unit getVariable ["owner",_unit])};
+
+if (!isPlayer (_unit getVariable ["owner",_unit]))
+then { selectPlayer (_unit getVariable ["owner",_unit]); };
+
 //_unit setVariable ["owner",nil,true];
 _unit removeEventHandler ["HandleDamage",_eh2];
 player removeEventHandler ["HandleDamage",_eh1];

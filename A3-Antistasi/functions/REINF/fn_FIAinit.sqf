@@ -1,5 +1,3 @@
-private ["_victim","_killer"];
-
 private _unit = _this select 0;
 
 [_unit] call A3A_fnc_initRevive;
