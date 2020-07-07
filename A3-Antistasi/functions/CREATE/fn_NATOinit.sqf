@@ -1,5 +1,3 @@
-params ["_unit", ["_marker", ""]];
-
 /*  Inits the given unit with all needed data, flags and weapons
 *   Params:
 *       _unit : OBJECT : The unit that needs to be initialized
@@ -9,10 +7,17 @@ params ["_unit", ["_marker", ""]];
 *       Nothing
 */
 
+params
+[
+	"_unit",
+	["_marker", ""]
+];
+
 //TODO we may want to rename that file to AIinit or something
 private _fileName = "NATOinit";
 
-if ((isNil "_unit") || { (isNull _unit) })
+if ((isNil "_unit") || {
+	(isNull _unit) })
 exitWith { [1, format ["Bad init parameter: %1", _this], _fileName] call A3A_fnc_log; };
 
 private _type = typeOf _unit;
@@ -29,39 +34,43 @@ _unit addEventHandler ["killed", { _this spawn A3A_fnc_occupantInvaderUnitKilled
 if (_marker != "")
 then
 {
-    _unit setVariable ["markerX", _marker, true];
+	_unit setVariable ["markerX", _marker, true];
 
-    if ((spawner getVariable _marker != 0) && { !(isNull objectParent _unit) })
-    then { [_unit, false] remoteExec ["enableSimulationGlobal", 2]; };
+	if ((spawner getVariable _marker != 0) && {
+		!(isNull objectParent _unit) })
+	then { [_unit, false] remoteExec ["enableSimulationGlobal", 2]; };
 }
 else
 {
-    if (isNull objectParent _unit)
-    then
-    {
-        private _veh = objectParent _unit;
+	if (isNull objectParent _unit)
+	then
+	{
+		private _veh = objectParent _unit;
 
-        if (_unit in (assignedCargo _veh))
-        then
-        {
-            _unit addEventHandler
-            [
-                "GetOutMan",
-                {
-                    _unit = _this #0;
-                    _veh = _this #2;
-                    _driver = driver _veh;
+		if (_unit in (assignedCargo _veh))
+		then
+		{
+			_unit addEventHandler
+			[
+				"GetOutMan",
+				{
+					null = _this spawn
+					{
+						private _unit = _this #0;
+						private _veh = _this #2;
+						private _driver = driver _veh;
 
-                    if ((!isNull _driver) && {
-                        (side group _driver != teamPlayer) && {
-                        !(_unit getVariable ["spawner", false]) }})
-                    then { _unit setVariable ["spawner", true, true] };
-                }
-            ];
-        }
-        else { _unit setVariable ["spawner", true, true]; };
-    }
-    else { _unit setVariable ["spawner", true, true]; };
+						if (!(isNull _driver) && {
+							(side group _driver != teamPlayer) && {
+							!(_unit getVariable ["spawner", false]) }})
+						then { _unit setVariable ["spawner", true, true]; };
+					};
+				}
+			];
+		}
+		else { _unit setVariable ["spawner", true, true]; };
+	}
+	else { _unit setVariable ["spawner", true, true]; };
 };
 
 //Calculates the skill of the given unit
@@ -73,26 +82,26 @@ then { _skill = _skill min (0.2 * skillMult); };
 if (faction _unit isEqualTo factionGEN)
 then
 {
-    _skill = _skill min (0.12 * skillMult);
+	_skill = _skill min (0.12 * skillMult);
 
-    if (!hasIFA)
-    then
-    {
-        private _rifleFinal = primaryWeapon _unit;
-        private _magazines = getArray (configFile / "CfgWeapons" / _rifleFinal / "magazines");
+	if (!hasIFA)
+	then
+	{
+		private _rifleFinal = primaryWeapon _unit;
+		private _magazines = getArray (configFile >> "CfgWeapons" >> _rifleFinal >> "magazines");
 
-        {
-            _unit removeMagazines _x;			// Broken, doesn't remove mags globally. Pain to fix.
-        } forEach _magazines;
+		{
+			_unit removeMagazines _x;			// Broken, doesn't remove mags globally. Pain to fix.
+		} forEach _magazines;
 
-        _unit removeWeaponGlobal (_rifleFinal);
+		_unit removeWeaponGlobal (_rifleFinal);
 
-        if (tierWar < 5)
-        then { [_unit, (selectRandom allSMGs), 6, 0] call BIS_fnc_addWeapon; }
-        else { [_unit, (selectRandom allRifles), 6, 0] call BIS_fnc_addWeapon; };
+		if (tierWar < 5)
+		then { [_unit, (selectRandom allSMGs), 6, 0] call BIS_fnc_addWeapon; }
+		else { [_unit, (selectRandom allRifles), 6, 0] call BIS_fnc_addWeapon; };
 
-        _unit selectWeapon (primaryWeapon _unit);
-    };
+		_unit selectWeapon (primaryWeapon _unit);
+	};
 };
 _unit setSkill _skill;
 
@@ -100,12 +109,12 @@ _unit setSkill _skill;
 if (_type in squadLeaders)
 then
 {
-    _unit setskill ["courage", _skill + 0.2];
-    _unit setskill ["commanding", _skill + 0.2];
-    private _hasIntel = ((random 100) < 40);
-    _unit setVariable ["hasIntel", _hasIntel, true];
-    _unit setVariable ["side", _side, true];
-    [_unit, "Intel_Small"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _unit];
+	_unit setskill ["courage", _skill + 0.2];
+	_unit setskill ["commanding", _skill + 0.2];
+	private _hasIntel = ((random 100) < 40);
+	_unit setVariable ["hasIntel", _hasIntel, true];
+	_unit setVariable ["side", _side, true];
+	[_unit, "Intel_Small"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _unit];
 };
 
 //Sets NVGs, lights, lasers, radios and spotting skills for the night
@@ -114,133 +123,126 @@ private _hmd = hmd _unit;
 if !(hasIFA)
 then
 {
-    if (sunOrMoon < 1)
-    then
-    {
-        if (!hasRHS)
-        then
-        {
-            if ((faction _unit != factionMaleOccupants) && {
-                (faction _unit != factionMaleInvaders) && {
-                (_unit != leader (group _unit)) && {
-                (_hmd != "") && {
-                (random 5 > tierWar) && {
-                (!haveNV) }}}}})
-            then
-            {
-                _unit unassignItem _hmd;
-                _unit removeItem _hmd;
-                _hmd = "";
-            };
-        }
-        else
-        {
-            private _arr = (allNVGs arrayIntersect (items _unit));
+	if (sunOrMoon < 1)
+	then
+	{
+		if (!hasRHS)
+		then
+		{
+			if ((faction _unit != factionMaleOccupants) && {
+				(faction _unit != factionMaleInvaders) && {
+				(_unit != leader (group _unit)) && {
+				(_hmd != "") && {
+				(random 5 > tierWar) && {
+				(!haveNV) }}}}})
+			then
+			{
+				_unit unassignItem _hmd;
+				_unit removeItem _hmd;
+				_hmd = "";
+			};
+		}
+		else
+		{
+			private _arr = (allNVGs arrayIntersect (items _unit));
 
-            if (!(_arr isEqualTo []) || { (_hmd != "") }) then
-            {
-                if ((random 5 > tierWar) && {
-                    (!haveNV) && {
-                    (_unit != leader (group _unit)) }})
-                then
-                {
-                    if (_hmd == "")
-                    then
-                    {
-                        _hmd = _arr select 0;
-                        _unit removeItem _hmd;
-                    }
-                    else
-                    {
-                        _unit unassignItem _hmd;
-                        _unit removeItem _hmd;
-                    };
-                    _hmd = "";
-                }
-                else { _unit assignItem _hmd; };
-            };
-        };
-        private _weaponItems = primaryWeaponItems _unit;
-        if (_hmd != "")
-        then
-        {
-            if (_weaponItems findIf {_x in allLaserAttachments} != -1)
-            then
-            {
-                _unit action ["IRLaserOn", _unit];
-                _unit enableIRLasers true;
-            };
-        }
-        else
-        {
-            private _pointers = _weaponItems arrayIntersect allLaserAttachments;
+			if (!(_arr isEqualTo []) || { (_hmd != "") })
+			then
+			{
+				if ((random 5 > tierWar) && {
+					(!haveNV) && {
+					(_unit != leader (group _unit)) }})
+				then
+				{
+					if (_hmd == "")
+					then
+					{
+						_hmd = _arr #0;
+						_unit removeItem _hmd;
+					}
+					else
+					{
+						_unit unassignItem _hmd;
+						_unit removeItem _hmd;
+					};
 
-            if !(_pointers isEqualTo [])
-            then
-            {
-                _unit removePrimaryWeaponItem (_pointers select 0);
-            };
+					_hmd = "";
+				}
+				else { _unit assignItem _hmd; };
+			};
+		};
 
-            private _lamp = "";
-            private _lamps = _weaponItems arrayIntersect allLightAttachments;
+		private _weaponItems = primaryWeaponItems _unit;
 
-            if (_lamps isEqualTo [])
-            then
-            {
-                private _compatibleLamps = ((primaryWeapon _unit) call BIS_fnc_compatibleItems) arrayIntersect allLightAttachments;
+		if (_hmd != "")
+		then
+		{
+			if (_weaponItems findIf {_x in allLaserAttachments} != -1)
+			then
+			{
+				_unit action ["IRLaserOn", _unit];
+				_unit enableIRLasers true;
+			};
+		}
+		else
+		{
+			private _pointers = _weaponItems arrayIntersect allLaserAttachments;
 
-                if !(_compatibleLamps isEqualTo [])
-                then
-                {
-                    _lamp = selectRandom _compatibleLamps;
-                    _unit addPrimaryWeaponItem _lamp;
-                    _unit assignItem _lamp;
-                };
-            }
-            else
-            {
-                _lamp = _lamps select 0;
-            };
+			if !(_pointers isEqualTo [])
+			then { _unit removePrimaryWeaponItem (_pointers #0); };
 
-            if (_lamp != "")
-            then
-            {
-                _unit enableGunLights "AUTO";
-            };
+			private _lamp = "";
+			private _lamps = _weaponItems arrayIntersect allLightAttachments;
 
-            //Reduce their magical night-time spotting powers.
-            _unit setskill ["spotDistance", _skill * 0.7];
-            _unit setskill ["spotTime", _skill * 0.5];
-        };
-    }
-    else
-    {
-        if (!hasRHS)
-        then
-        {
-            if ((faction _unit != factionMaleOccupants) && { (faction _unit != factionMaleInvaders) })
-            then
-            {
-                if (_hmd != "")
-                then
-                {
-                    _unit unassignItem _hmd;
-                    _unit removeItem _hmd;
-                };
-            };
-        }
-        else
-        {
-            private _arr = allNVGs arrayIntersect (items _unit);
+			if (_lamps isEqualTo [])
+			then
+			{
+				private _compatibleLamps = ((primaryWeapon _unit) call BIS_fnc_compatibleItems) arrayIntersect allLightAttachments;
 
-            if (count _arr > 0)
-            then
-            {
-                _hmd = _arr select 0;
-                _unit removeItem _hmd;
-            };
-        };
-    };
+				if !(_compatibleLamps isEqualTo [])
+				then
+				{
+					_lamp = selectRandom _compatibleLamps;
+					_unit addPrimaryWeaponItem _lamp;
+					_unit assignItem _lamp;
+				};
+			}
+			else { _lamp = _lamps #0; };
+
+			if (_lamp != "")
+			then { _unit enableGunLights "AUTO"; };
+
+			//Reduce their magical night-time spotting powers.
+			_unit setskill ["spotDistance", _skill * 0.7];
+			_unit setskill ["spotTime", _skill * 0.5];
+		};
+	}
+	else
+	{
+		if (!hasRHS)
+		then
+		{
+			if ((faction _unit != factionMaleOccupants) && {
+				(faction _unit != factionMaleInvaders) && {
+				(_hmd != "") }})
+			then
+			{
+				_unit unassignItem _hmd;
+				_unit removeItem _hmd;
+			};
+		}
+		else
+		{
+			private _arr = (allNVGs arrayIntersect (items _unit));
+
+			if (count _arr > 0)
+			then
+			{
+				_hmd = _arr #0;
+				_unit removeItem _hmd;
+			};
+		};
+	};
 }
 else { _unit unlinkItem (_unit call A3A_fnc_getRadio); };
 
@@ -250,19 +252,23 @@ private _reveal = false;
 if !(isNull objectParent _unit)
 then
 {
-    if (_unit == gunner (objectParent _unit))
-    then { _reveal = true; };
+	if (_unit == gunner (objectParent _unit))
+	then { _reveal = true; };
 }
 else
 {
-    if ((secondaryWeapon _unit) in allMissileLaunchers)
-    then { _reveal = true; };
+	if ((secondaryWeapon _unit) in allMissileLaunchers)
+	then { _reveal = true; };
 };
 
 if (_reveal)
 then
 {
-    {
-        _unit reveal [_x, 1.5];
-    } forEach allUnits select {(vehicle _x isKindOf "Air") && { (_x distance _unit <= distanceSPWN) }}
+	{
+		_unit reveal [_x, 1.5];
+	} forEach allUnits select
+	{
+		(vehicle _x isKindOf "Air") && {
+		(_x distance _unit <= distanceSPWN) }
+	}
 };
