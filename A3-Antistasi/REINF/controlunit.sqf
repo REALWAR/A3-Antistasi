@@ -1,43 +1,54 @@
-private ["_units","_unit"];
+private _unit = _this #0 #0;
 
-_units = _this select 0;
+if (_unit == Petros)
+exitWith { ["Control Unit", "You cannot control Petros"] call A3A_fnc_customHint; };
 
-_unit = _units select 0;
+//if (captive player) exitWith { hint "You cannot control AI while on Undercover" };
+if (player != leader group player)
+exitWith { ["Control Unit", "You cannot control AI if you are not the squad leader"] call A3A_fnc_customHint; };
 
-if (_unit == Petros) exitWith {["Control Unit", "You cannot control Petros"] call A3A_fnc_customHint;};
-//if (captive player) exitWith {hint "You cannot control AI while on Undercover"};
-if (player != leader group player) exitWith {["Control Unit", "You cannot control AI if you are not the squad leader"] call A3A_fnc_customHint;};
-if (isPlayer _unit) exitWith {["Control Unit", "You cannot control another player"] call A3A_fnc_customHint;};
-if (!(alive _unit) or (_unit getVariable ["incapacitated",false]))  exitWith {["Control Unit", "You cannot control an unconscious, a dead unit"] call A3A_fnc_customHint;};
-//if ((not(typeOf _unit in soldiersSDK)) and (typeOf _unit != "b_g_survivor_F")) exitWith {hint "You cannot control a unit which does not belong to FIA"};
-if (side _unit != teamPlayer) exitWith {["Control Unit", format ["You cannot control a unit which does not belong to %1",nameTeamPlayer]] call A3A_fnc_customHint;};
-private _punishmentoffenceTotal = [getPlayerUID player, [ ["offenceTotal",0] ]] call A3A_fnc_punishment_dataGet select 0;
-if (_punishmentoffenceTotal >= 1) exitWith {["Control Unit", "Nope. Not happening."] call A3A_fnc_customHint;};
+if (isPlayer _unit)
+exitWith { ["Control Unit", "You cannot control another player"] call A3A_fnc_customHint; };
 
-_owner = player getVariable ["owner",player];
-if (_owner!=player) exitWith {["Control Unit", "You cannot control AI while you are controlling another AI"] call A3A_fnc_customHint;};
+if (!(alive _unit) or (_unit getVariable ["incapacitated", false]))
+exitWith { ["Control Unit", "You cannot control an unconscious, a dead unit"] call A3A_fnc_customHint; };
+//if ((not(typeOf _unit in soldiersSDK)) and (typeOf _unit != "b_g_survivor_F")) exitWith { hint "You cannot control a unit which does not belong to FIA" };
+
+if (side _unit != teamPlayer)
+exitWith { ["Control Unit", format ["You cannot control a unit which does not belong to %1", nameTeamPlayer]] call A3A_fnc_customHint; };
+
+private _punishmentoffenceTotal = [getPlayerUID player, [ ["offenceTotal", 0] ]] call A3A_fnc_punishment_dataGet #0;
+
+if (_punishmentoffenceTotal >= 1)
+exitWith { ["Control Unit", "Nope. Not happening."] call A3A_fnc_customHint; };
+
+_owner = player getVariable ["owner", player];
+
+if (_owner!=player)
+exitWith { ["Control Unit", "You cannot control AI while you are controlling another AI"] call A3A_fnc_customHint; };
 
 {
-if (_x != vehicle _x) then
-	{
-	[_x] orderGetIn true;
-	};
+	if (_x != vehicle _x)
+	then { [_x] orderGetIn true; };
 } forEach units group player;
 
-_unit setVariable ["owner",player,true];
+_unit setVariable ["owner", player, true];
 
 _eh1 = player addEventHandler
 [
 	"HandleDamage",
 	{
-		_unit = _this #0;
-		_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-		//removeAllActions _unit;
-		selectPlayer _unit;
-		(units group player) joinsilent group player;
-		group player selectLeader player;
-		["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
-		_this #2
+		params ["_unit"];
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+
+		null = _this spawn {
+			params ["_unit"];
+			//removeAllActions _unit;
+			selectPlayer _unit;
+			(units group player) joinsilent group player;
+			group player selectLeader player;
+			["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
+		};
 	}
 ];
 
@@ -45,14 +56,17 @@ _eh2 = _unit addEventHandler
 [
 	"HandleDamage",
 	{
-		_unit = _this #0;
-		_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-		removeAllActions _unit;
-		selectPlayer (_unit getVariable "owner");
-		(units group player) joinsilent group player;
-		group player selectLeader player;
-		["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
-		_this #2
+		params ["_unit"];
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+
+		null = _this spawn {
+			params ["_unit"];
+			removeAllActions _unit;
+			selectPlayer (_unit getVariable "owner");
+			(units group player) joinsilent group player;
+			group player selectLeader player;
+			["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
+		};
 	}
 ];
 
@@ -60,13 +74,13 @@ selectPlayer _unit;
 
 _timeX = 60;
 
-_unit addAction ["Return Control to AI",{selectPlayer leader (group (_this select 0))}];
+_unit addAction ["Return Control to AI", {selectPlayer leader (group (_this #0))}];
 
 waitUntil {sleep 1; ["Control Unit", format ["Time to return control to AI: %1", _timeX]] call A3A_fnc_customHint; _timeX = _timeX - 1; (_timeX == -1) or (isPlayer (leader group player))};
 
 removeAllActions _unit;
-selectPlayer (_unit getVariable ["owner",_unit]);
-//_unit setVariable ["owner",nil,true];
+selectPlayer (_unit getVariable ["owner", _unit]);
+//_unit setVariable ["owner", nil, true];
 (units group player) joinsilent group player;
 group player selectLeader player;
 _unit removeEventHandler ["HandleDamage", _eh2];
