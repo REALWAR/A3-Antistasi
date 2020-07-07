@@ -17,7 +17,7 @@ _unit addEventHandler
 			"_hitSelection",
 			"_damage",
 			"_source",
-			"projectile"
+			"_projectile"
 		];
 
 		if (!(isNil "_source") && {

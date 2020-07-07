@@ -71,7 +71,7 @@ private _fn_selectExplosive =
 		private _index = _mags findIf {(_x #0) == _breach};
 
 		if ((_index != -1) && {
-			((_mags select _index) #1 >= (_x #1)) }
+			((_mags select _index) #1 >= (_x #1)) })
 		then { _result = [_breach, _x #1]; };
 	} forEach _array;
 

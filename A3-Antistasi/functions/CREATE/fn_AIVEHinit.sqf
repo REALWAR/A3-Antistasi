@@ -228,10 +228,10 @@ else
 				{
 					params ["_veh", "_position", "_unit"];
 
-					if ((_position == "driver")
+					if ((_position == "driver") && {
 						(!isPlayer _unit) && {
 						(_unit getVariable ["spawner", false]) && {
-						(side group _unit == teamPlayer) }})
+						(side group _unit == teamPlayer) }}})
 					then
 					{
 						moveOut _unit;

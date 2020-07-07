@@ -266,7 +266,7 @@ then
 				private _veh = _this #1;
 
 				// will flip/capture if already initialized
-				null = _veh, teamPlayer] call A3A_fnc_AIVEHinit;
+				null = [_veh, teamPlayer] call A3A_fnc_AIVEHinit;
 
 				if !(_veh isKindOf "StaticWeapon") exitWith {};
 
