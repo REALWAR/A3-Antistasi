@@ -392,7 +392,7 @@ then
 				"_damage",
 				"_source",
 				"_projectile"
-			]
+			];
 
 			if ((_hitSelection find "wheel" != -1) && {
 				(_projectile == "") && {

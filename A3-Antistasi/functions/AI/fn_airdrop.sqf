@@ -81,7 +81,7 @@ waitUntil
 	(currentWaypoint _groupPilot == 3) || {
 	!(alive _veh) || {
 	!(canMove _veh) }}
-}
+};
 
 //[_veh] call A3A_fnc_entriesLand;
 
