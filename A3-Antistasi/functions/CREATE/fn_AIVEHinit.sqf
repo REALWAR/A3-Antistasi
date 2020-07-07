@@ -411,7 +411,7 @@ then
 				"_hitSelection",
 				"_damage",
 				"_source"
-			]
+			];
 
 			if (side _source == teamPlayer)
 			then
