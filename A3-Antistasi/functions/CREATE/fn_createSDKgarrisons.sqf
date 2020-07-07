@@ -74,7 +74,7 @@ then
 								{
 									params ["_unit"];
 
-									if (units droup _unit findIf {alive _x} != -1)
+									if ((units (group _unit)) findIf {alive _x} != -1)
 									then
 									{
 										private _markerX = _unit getVariable "markerX";
