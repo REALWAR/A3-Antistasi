@@ -339,12 +339,12 @@ else
 								{
 									private _LeaderX = leader (gunner _mortarX);
 
-									if (!isPlayer _LeaderX)
-									then { [[], "A3A_fnc_attackHQ"] remoteExec ["A3A_fnc_scheduler", 2]; }
+									if !(isPlayer _LeaderX)
+									then { null = [[], "A3A_fnc_attackHQ"] remoteExec ["A3A_fnc_scheduler", 2]; }
 									else
 									{
 										if ([_LeaderX] call A3A_fnc_isMember)
-										then { [[], "A3A_fnc_attackHQ"] remoteExec ["A3A_fnc_scheduler", 2]; };
+										then { null = [[], "A3A_fnc_attackHQ"] remoteExec ["A3A_fnc_scheduler", 2]; };
 									};
 								};
 							}
@@ -362,6 +362,8 @@ else
 								{
 									private _base = [_bases, _positionX] call BIS_fnc_nearestPosition;
 									private _sideX = sidesX getVariable [_base, sideUnknown];
+
+									null =
 									[
 										[getPosASL _mortarX, _sideX, "Normal", false],
 										"A3A_fnc_patrolCA"
@@ -442,11 +444,15 @@ then
 	[
 		"GetIn",
 		{
+			params ["_veh"];
+			_veh removeEventHandler ["GetIn", _thisEventHandler];
+
 			null = _this spawn
 			{
 				params ["_veh", "_role", "_unit"];
 
-				if (side group _unit != teamPlayer) exitWith {};		// only rebels can flip vehicles atm
+				// only rebels can flip vehicles atm
+				if (side group _unit != teamPlayer) exitWith {};
 
 				private _oldside = _veh getVariable ["ownerSide", teamPlayer];
 
@@ -458,7 +464,6 @@ then
 				};
 			};
 
-			_veh removeEventHandler ["GetIn", _thisEventHandler];
 		}
 	];
 };
