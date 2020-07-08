@@ -28,7 +28,7 @@ if (_type == "Fin_random_F") exitWith {};
 //Sets the EH for the unit
 _unit addEventHandler ["HandleDamage", A3A_fnc_handleDamageAAF];
 
-_unit addEventHandler ["killed", { _this spawn A3A_fnc_occupantInvaderUnitKilledEH; }];
+_unit addEventHandler ["killed", { null = _this spawn A3A_fnc_occupantInvaderUnitKilledEH; }];
 
 //Sets the most important variables to the unit
 if (_marker != "")
@@ -97,8 +97,8 @@ then
 		_unit removeWeaponGlobal (_rifleFinal);
 
 		if (tierWar < 5)
-		then { [_unit, (selectRandom allSMGs), 6, 0] call BIS_fnc_addWeapon; }
-		else { [_unit, (selectRandom allRifles), 6, 0] call BIS_fnc_addWeapon; };
+		then { null = [_unit, (selectRandom allSMGs), 6, 0] call BIS_fnc_addWeapon; }
+		else { null = [_unit, (selectRandom allRifles), 6, 0] call BIS_fnc_addWeapon; };
 
 		_unit selectWeapon (primaryWeapon _unit);
 	};
@@ -114,7 +114,7 @@ then
 	private _hasIntel = ((random 100) < 40);
 	_unit setVariable ["hasIntel", _hasIntel, true];
 	_unit setVariable ["side", _side, true];
-	[_unit, "Intel_Small"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _unit];
+	null = [_unit, "Intel_Small"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _unit];
 };
 
 //Sets NVGs, lights, lasers, radios and spotting skills for the night
@@ -126,7 +126,7 @@ then
 	if (sunOrMoon < 1)
 	then
 	{
-		if (!hasRHS)
+		if !(hasRHS)
 		then
 		{
 			if ((faction _unit != factionMaleOccupants) && {
@@ -134,7 +134,7 @@ then
 				(_unit != leader (group _unit)) && {
 				(_hmd != "") && {
 				(random 5 > tierWar) && {
-				(!haveNV) }}}}})
+				!(haveNV) }}}}})
 			then
 			{
 				_unit unassignItem _hmd;

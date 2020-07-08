@@ -164,7 +164,7 @@ then
 						params ["_veh", "_position", "_unit"];
 
 						if (side _unit != teamPlayer)
-						then { _veh setVariable ["within", true]; }
+						then { _veh setVariable ["within", true]; };
 					};
 				}
 			];
@@ -229,7 +229,7 @@ else
 					params ["_veh", "_position", "_unit"];
 
 					if ((_position == "driver") && {
-						(!isPlayer _unit) && {
+						!(isPlayer _unit) && {
 						(_unit getVariable ["spawner", false]) && {
 						(side group _unit == teamPlayer) }}})
 					then
@@ -291,26 +291,26 @@ else
 			_veh setCenterOfMass [(getCenterOfMass _veh) vectorAdd [0, 0, -1], 0];
 
 			if (!(_veh in staticsToSave) && {
-				(side gunner _veh != teamPlayer) })
+				(side (gunner _veh) != teamPlayer) })
 			then
 			{
-				if (activeGREF && {
+				if ((activeGREF) && {
 					(_typeX == staticATteamPlayer) || {
 					(_typeX == staticAAteamPlayer) }})
-				then { [_veh, "moveS"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; }
-				else { [_veh, "steal"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; };
+				then { null = [_veh, "moveS"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; }
+				else { null = [_veh, "steal"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; };
 			};
 
 			if (_typeX != SDKMortar) exitWith {};
 
-			if (!isNull gunner _veh)
-			then { [_veh, "steal"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; };
+			if !(isNull (gunner _veh))
+			then { null = [_veh, "steal"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _veh]; };
 
 			_veh addEventHandler
 			[
 				"Fired",
 				{
-					_this spawn
+					null = _this spawn
 					{
 						params ["_mortarX"];
 
@@ -334,7 +334,7 @@ else
 							if (_mortarX distance posHQ < 300)
 							then
 							{
-								if (!(["DEF_HQ"] call BIS_fnc_taskExists))
+								if !(["DEF_HQ"] call BIS_fnc_taskExists)
 								then
 								{
 									private _LeaderX = leader (gunner _mortarX);
@@ -352,7 +352,7 @@ else
 							{
 								private _bases = airportsX select
 								{
-									(getMarkerPos _x distance _mortarX < distanceForAirAttack) && {
+									((getMarkerPos _x) distance _mortarX < distanceForAirAttack) && {
 									([_x, true] call A3A_fnc_airportCanAttack) && {
 									(sidesX getVariable [_x, sideUnknown] != teamPlayer) }}
 								};
@@ -398,7 +398,7 @@ then
 
 			if ((_hitSelection find "wheel" != -1) && {
 				(_projectile == "") && {
-				!(isPlayer driver _unit) }})
+				!(isPlayer (driver _unit)) }})
 			exitWith { 0 };
 		}
 	];

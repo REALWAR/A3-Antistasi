@@ -94,7 +94,7 @@ _mrk setMarkerBrushLocal "DiagGrid";
 _ang = markerDir _markerX;
 _mrk setMarkerDirLocal _ang;
 
-if (!debug) then {_mrk setMarkerAlphaLocal 0};
+if (!debug) then { _mrk setMarkerAlphaLocal 0; };
 
 _garrison = garrison getVariable [_markerX, []];
 _garrison = _garrison call A3A_fnc_garrisonReorg;
@@ -107,7 +107,7 @@ if (_radiusX < ([_markerX] call A3A_fnc_garrisonSize))
 then { _patrol = false; }
 else
 {
-	_patrol = ((markersX findIf {(getMarkerPos _x inArea _mrk) && {sidesX getVariable [_x, sideUnknown] != _sideX}}) == -1);
+	_patrol = ((markersX findIf {(getMarkerPos _x inArea _mrk) && { (sidesX getVariable [_x, sideUnknown] != _sideX) }}) == -1);
 };
 
 if (_patrol)
@@ -148,7 +148,7 @@ then
 			_groups pushBack _groupX;
 
 			{
-				[_x, _markerX] call A3A_fnc_NATOinit;
+				null = [_x, _markerX] call A3A_fnc_NATOinit;
 				_soldiers pushBack _x;
 			} forEach units _groupX;
 		};
@@ -161,7 +161,7 @@ if ((_frontierX) && {
 	(_markerX in outposts) })
 then
 {
-	_typeUnit = if (_sideX==Occupants) then {staticCrewOccupants} else {staticCrewInvaders};
+	_typeUnit = if (_sideX == Occupants) then {staticCrewOccupants} else {staticCrewInvaders};
 	_typeVehX = if (_sideX == Occupants) then {NATOMortar} else {CSATMortar};
 
 	_spawnParameter = [_markerX, "Mortar"] call A3A_fnc_findSpawnPosition;
@@ -174,7 +174,7 @@ then
 		//TODO need delete UPSMON link
 		null = [_veh] execVM "scripts\UPSMON\MON_artillery_add.sqf";
 		_unit = [_groupX, _typeUnit, _positionX, [], 0, "NONE"] call A3A_fnc_createUnit;
-		null = [_unit, _markerX] call A3A_fnc_NATOinit;
+		null = [_unit, _markerX] spawn A3A_fnc_NATOinit;
 		_unit moveInGunner _veh;
 		_groups pushBack _groupX;
 		_soldiers pushBack _unit;
@@ -188,7 +188,7 @@ _groups pushBack (_ret #0);
 _vehiclesX append (_ret #1);
 _soldiers append (_ret #2);
 
-{ null = [_x, _sideX] call A3A_fnc_AIVEHinit; } forEach _vehiclesX;
+{ null = [_x, _sideX] spawn A3A_fnc_AIVEHinit; } forEach _vehiclesX;
 
 if (random 100 < (40 + tierWar * 3))
 then
@@ -201,7 +201,7 @@ _typeVehX = if (_sideX == Occupants) then {NATOFlag} else {CSATFlag};
 
 _flagX = createVehicle [_typeVehX, _positionX, [], 0, "NONE"];
 _flagX allowDamage false;
-[_flagX, "take"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _flagX];
+null = [_flagX, "take"] remoteExec ["A3A_fnc_flagaction", [teamPlayer, civilian], _flagX];
 _vehiclesX pushBack _flagX;
 
 private _ammoBoxType = if (_sideX == Occupants) then {NATOAmmoBox} else {CSATAmmoBox};
@@ -228,11 +228,11 @@ then
 		then
 		{
 			_pos = (getMarkerPos (_mrkMar #0)) findEmptyPosition [0, 20, _typeVehX];
-			_vehicle=[_pos, 0, _typeVehX, _sideX] call bis_fnc_spawnvehicle;
+			_vehicle = [_pos, 0, _typeVehX, _sideX] call bis_fnc_spawnvehicle;
 			_veh = _vehicle #0;
-			null = [_veh, _sideX] call A3A_fnc_AIVEHinit;
+			null = [_veh, _sideX] spawn A3A_fnc_AIVEHinit;
 			_vehCrew = _vehicle #1;
-			{ null = [_x, _markerX] call A3A_fnc_NATOinit; } forEach _vehCrew;
+			{ null = [_x, _markerX] spawn A3A_fnc_NATOinit; } forEach _vehCrew;
 			_groupVeh = _vehicle #2;
 			_soldiers = _soldiers + _vehCrew;
 			_groups pushBack _groupVeh;
@@ -295,8 +295,8 @@ else
 			_veh setDir _dirVeh + 180;
 			_typeUnit = if (_sideX==Occupants) then { staticCrewOccupants } else { staticCrewInvaders };
 			_unit = [_groupX, _typeUnit, _positionX, [], 0, "NONE"] call A3A_fnc_createUnit;
-			null = [_unit, _markerX] call A3A_fnc_NATOinit;
-			null = [_veh, _sideX] call A3A_fnc_AIVEHinit;
+			null = [_unit, _markerX] spawn A3A_fnc_NATOinit;
+			null = [_veh, _sideX] spawn A3A_fnc_AIVEHinit;
 			_unit moveInGunner _veh;
 			_soldiers pushBack _unit;
 		};
@@ -321,7 +321,7 @@ then
 	_veh = createVehicle [selectRandom _typeVehX, (_spawnParameter #0), [], 0, "NONE"];
 	_veh setDir (_spawnParameter #1);
 	_vehiclesX pushBack _veh;
-	null = [_veh, _sideX] call A3A_fnc_AIVEHinit;
+	null = [_veh, _sideX] spawn A3A_fnc_AIVEHinit;
 	sleep 1;
 };
 
@@ -363,7 +363,7 @@ then
 		_unit setPosATL _posF;
 		_unit forceSpeed 0;
 		_unit setUnitPos "UP";
-		null = [_unit, _markerX] call A3A_fnc_NATOinit;
+		null = [_unit, _markerX] spawn A3A_fnc_NATOinit;
 		_soldiers pushBack _unit;
 		_groups pushBack _groupX;
 	};
@@ -385,8 +385,8 @@ for "_i" from 0 to (count _array - 1) do
 	//What is so special about the first?
 	_groupX =
 	if (_i == 0)
-	then { null = [_positionX, _sideX, (_array select _i), true, false] call A3A_fnc_spawnGroup; }
-	else { null = [_positionX, _sideX, (_array select _i), false, true] call A3A_fnc_spawnGroup; };
+	then { [_positionX, _sideX, (_array select _i), true, false] call A3A_fnc_spawnGroup; }
+	else { [_positionX, _sideX, (_array select _i), false, true] call A3A_fnc_spawnGroup; };
 
 	_groups pushBack _groupX;
 
