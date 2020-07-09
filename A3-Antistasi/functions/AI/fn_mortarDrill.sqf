@@ -81,7 +81,13 @@ if !(alive _mortarX) exitWith {_morty call A3A_fnc_recallGroup};
 
 _groupX setVariable ["mortarsX",_morty];
 
-_morty addEventHandler ["Killed",
+null = _morty addEventHandler
+[
+	"Killed",
 	{
-	(group (_this select 0)) setVariable ["mortarsX",objNull];
-	}];
+		params ["_unit"];
+		_unit removeEventHandler ["Killed", _thisEventHandler];
+
+		null = _this spawn { (group (_this #0)) setVariable ["mortarsX", objNull]; };
+	}
+];
