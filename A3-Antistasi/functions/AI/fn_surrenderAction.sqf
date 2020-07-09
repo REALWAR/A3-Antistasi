@@ -27,13 +27,27 @@ unassignVehicle _unit;			// stop them getting back into vehicles
 _unit setUnitPos "UP";
 _unit playMoveNow "AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon";		// hands up?
 _unit setSpeaker "NoVoice";
-_unit addEventHandler ["HandleDamage",
+
+null = _unit addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit enableAI "ANIM";
-	if (!simulationEnabled _unit) then {if (isMultiplayer) then {[_unit,true] remoteExec ["enableSimulationGlobal",2]} else {_unit enableSimulation true}};
+		null = _this spawn
+		{
+			params ["_unit"];
+
+			_unit enableAI "ANIM";
+
+			if !(simulationEnabled _unit)
+			then
+			{
+				if (isMultiplayer)
+				then { null = [_unit, true] remoteExec ["enableSimulationGlobal", 2]; }
+				else { _unit enableSimulation true; };
+			};
+		};
 	}
-	];
+];
 
 // create surrender box
 private _boxX = "Box_IND_Wps_F" createVehicle position _unit;
