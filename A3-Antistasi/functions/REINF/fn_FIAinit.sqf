@@ -34,25 +34,45 @@ private _killer = objNull;
 
 if (player == leader _unit) then {
 	_unit setVariable ["owner", player, true];
-	_unit addEventHandler ["killed", {
-		_victim = _this select 0;
-		[_victim] spawn A3A_fnc_postmortem;
-		_killer = _this select 1;
-		if !(hasIFA) then {arrayids pushBackUnique (name _victim)};
-		if (side _killer == Occupants) then {
-			_nul = [0.25,0,getPos _victim] remoteExec ["A3A_fnc_citySupportChange",2];
-			[[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige",2];
-		} else {
-			if (side _killer == Invaders) then {
-				[[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige",2]
-			} else {
-				if (isPlayer _killer) then {
-					_killer addRating 1000;
+
+	null = _unit addEventHandler
+	[
+		"Killed",
+		{
+			params ["_unit"];
+			_unit removeEventHandler ["Killed", _thisEventHandler];
+
+			null = _this spawn
+			{
+				params ["_unit", "_killer"];
+
+				null = [_unit] spawn A3A_fnc_postmortem;
+
+				if !(hasIFA)
+				then { null = arrayids pushBackUnique (name _unit); };
+
+				if (side _killer == Occupants)
+				then
+				{
+					null = [0.25, 0, getPos _unit] remoteExec ["A3A_fnc_citySupportChange", 2];
+					null = [[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige", 2];
+				}
+				else
+				{
+					if (side _killer == Invaders)
+					then { null = [[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige", 2] }
+					else
+					{
+						if (isPlayer _killer)
+						then { _killer addRating 1000; };
+					};
 				};
+
+				_unit setVariable ["spawner", nil, true];
 			};
-		};
-		_victim setVariable ["spawner",nil,true];
-	}];
+		}
+	];
+
 	if ((typeOf _unit != SDKUnarmed) and !hasIFA) then {
 		private _idUnit = selectRandom arrayids;
 		arrayids = arrayids - [_idunit];
@@ -80,29 +100,54 @@ if (player == leader _unit) then {
 		};
 	};
 } else {
-	_unit addEventHandler ["killed", {
-		_victim = _this select 0;
-		_killer = _this select 1;
-		[_victim] remoteExec ["A3A_fnc_postmortem",2];
-		if ((isPlayer _killer) and (side _killer == teamPlayer)) then {
-			if (!isMultiPlayer) then {
-				_nul = [0,20] remoteExec ["A3A_fnc_resourcesFIA",2];
-				_killer addRating 1000;
-			};
-		} else {
-			if (side _killer == Occupants) then {
-				_nul = [0.25,0,getPos _victim] remoteExec ["A3A_fnc_citySupportChange",2];
-				[[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige",2];
-			} else {
-				if (side _killer == Invaders) then {
-					[[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige",2]
-				} else {
-					if (isPlayer _killer) then {
+
+	null = _unit addEventHandler
+	[
+		"killed",
+		{
+			params ["_unit"];
+			_unit removeEventHandler ["Killed", _thisEventHandler];
+
+			null = _this spawn
+			{
+				params ["_unit", "_killer"];
+
+				null = [_unit] remoteExec ["A3A_fnc_postmortem", 2];
+
+				if ((isPlayer _killer) && {
+					(side _killer == teamPlayer) })
+				then
+				{
+					if (!isMultiPlayer)
+					then
+					{
+						null = [0, 20] remoteExec ["A3A_fnc_resourcesFIA", 2];
 						_killer addRating 1000;
 					};
+				}
+				else
+				{
+					if (side _killer == Occupants)
+					then
+					{
+						null = [0.25, 0, getPos _unit] remoteExec ["A3A_fnc_citySupportChange", 2];
+						null = [[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige", 2];
+					}
+					else
+					{
+						if (side _killer == Invaders)
+						then { null = [[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige", 2]; }
+						else
+						{
+							if (isPlayer _killer)
+							then { _killer addRating 1000; };
+						};
+					};
 				};
+
+				_unit setVariable ["spawner", nil, true];
 			};
-		};
-		_victim setVariable ["spawner",nil,true];
-	}];
+		}
+	];
+
 };
