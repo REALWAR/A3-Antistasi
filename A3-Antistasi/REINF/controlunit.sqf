@@ -25,26 +25,48 @@ if (_x != vehicle _x) then
 } forEach units group player;
 
 _unit setVariable ["owner",player,true];
-_eh1 = player addEventHandler ["HandleDamage",
+
+_eh1 = player addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	//removeAllActions _unit;
-	selectPlayer _unit;
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
-	}];
-_eh2 = _unit addEventHandler ["HandleDamage",
+		params ["_unit"];
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+
+		null = _this spawn
+		{
+			params ["_unit"];
+
+			selectPlayer _unit;
+			(units group player) joinsilent group player;
+			group player selectLeader player;
+
+			null = ["Control Unit", "Returned to original Unit as it received damage"] call A3A_fnc_customHint;
+		};
+	}
+];
+
+_eh2 = _unit addEventHandler
+[
+	"HandleDamage",
 	{
-	_unit = _this select 0;
-	_unit removeEventHandler ["HandleDamage",_thisEventHandler];
-	removeAllActions _unit;
-	selectPlayer (_unit getVariable "owner");
-	(units group player) joinsilent group player;
-	group player selectLeader player;
-	["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
-	}];
+		params ["_unit"];
+		_unit removeEventHandler ["HandleDamage", _thisEventHandler];
+
+		null = _this spawn
+		{
+			params ["_unit"];
+
+			removeAllActions _unit;
+			selectPlayer (_unit getVariable "owner");
+			(units group player) joinsilent group player;
+			group player selectLeader player;
+
+			null = ["Control Unit", "Returned to original Unit as controlled AI received damage"] call A3A_fnc_customHint;
+		};
+	}
+];
+
 selectPlayer _unit;
 
 _timeX = 60;
@@ -61,4 +83,3 @@ group player selectLeader player;
 _unit removeEventHandler ["HandleDamage",_eh2];
 player removeEventHandler ["HandleDamage",_eh1];
 ["Control Unit", ""] call A3A_fnc_customHint;
-
