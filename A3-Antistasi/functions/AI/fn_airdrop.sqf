@@ -72,7 +72,24 @@ if (alive _veh) then
 	{
 	_veh setCollisionLight true;
 	{
-	_x addEventHandler ["Killed", {diag_log format ["Paratrooper killed by %1, %2, %3", _this, typeOf (_this select 1), isDamageAllowed (_this select 0)]}];
+
+	null = _x addEventHandler
+	[
+		"Killed",
+		{
+			params ["_unit"];
+			_unit removeEventHandler ["Killed", _thisEventHandler];
+
+			diag_log format
+			[
+				"Paratrooper killed by %1, %2, %3",
+				_this,
+				typeOf (_this #1),
+				isDamageAllowed (_this #0)
+			];
+		}
+	];
+
     waitUntil {sleep 0.5; !surfaceIsWater (position _x)};
     _x allowDamage false;
    	unAssignVehicle _x;
@@ -101,6 +118,6 @@ else
    {
    _wp4 = _groupX addWaypoint [_positionX, 0];
    _wp4 setWaypointType "MOVE";
-   _wp4 setWaypointStatements ["true","nul = [(thisList select {alive _x}),side this,(group this) getVariable [""reinfMarker"",""""],0] remoteExec [""A3A_fnc_garrisonUpdate"",2];[group this] spawn A3A_fnc_groupDespawner; reinfPatrols = reinfPatrols - 1; publicVariable ""reinfPatrols"";"];
+   _wp4 setWaypointStatements ["true","null = [(thisList select {alive _x}),side this,(group this) getVariable [""reinfMarker"",""""],0] remoteExec [""A3A_fnc_garrisonUpdate"",2];[group this] spawn A3A_fnc_groupDespawner; reinfPatrols = reinfPatrols - 1; publicVariable ""reinfPatrols"";"];
    };
 //[_veh] call A3A_fnc_entriesLand;
