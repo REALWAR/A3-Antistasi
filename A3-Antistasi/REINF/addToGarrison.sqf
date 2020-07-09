@@ -86,32 +86,31 @@ if (spawner getVariable _nearX != 2) then
 	_wp setWaypointType "MOVE";
 	{
 	_x setVariable ["markerX",_nearX,true];
-	_x addEventHandler ["killed",
+
+	null = _x addEventHandler
+	[
+		"Killed",
 		{
-		_victim = _this select 0;
-		_markerX = _victim getVariable "markerX";
-		if (!isNil "_markerX") then
+			params ["_unit"];
+			_unit removeEventHandler ["Killed", _thisEventHandler];
+
+			null = _this spawn
 			{
-			if (sidesX getVariable [_markerX,sideUnknown] == teamPlayer) then
+				params ["_unit"];
+
+				_markerX = _unit getVariable "markerX";
+
+				if ((!isNil "_markerX") && {
+					(sidesX getVariable [_markerX, sideUnknown] == teamPlayer) })
+				then
 				{
-				/*
-				_garrison = [];
-				_garrison = _garrison + (garrison getVariable [_markerX,[]]);
-				if (_garrison isEqualType []) then
-					{
-					for "_i" from 0 to (count _garrison -1) do
-						{
-						if (typeOf _victim == (_garrison select _i)) exitWith {_garrison deleteAt _i};
-						};
-					garrison setVariable [_markerX,_garrison,true];
-					};
-				[_markerX] call A3A_fnc_mrkUpdate;
-				*/
-				[typeOf _victim,teamPlayer,_markerX,-1] remoteExec ["A3A_fnc_garrisonUpdate",2];
-				_victim setVariable [_markerX,nil,true];
+					null = [typeOf _unit, teamPlayer, _markerX, -1] remoteExec ["A3A_fnc_garrisonUpdate", 2];
+					_unit setVariable [_markerX, nil, true];
 				};
 			};
-		}];
+		}
+	];
+
 	} forEach _unitsX;
 
 	waitUntil {sleep 1; (spawner getVariable _nearX == 2 or !(sidesX getVariable [_nearX,sideUnknown] == teamPlayer))};
@@ -136,32 +135,51 @@ else
 		{
 		_x setVariable ["markerX",nil,true];
 		_x removeAllEventHandlers "killed";
-		_x addEventHandler ["killed", {
-			_victim = _this select 0;
-			_killer = _this select 1;
-			[_victim] remoteExec ["A3A_fnc_postmortem",2];
-			if ((isPlayer _killer) and (side _killer == teamPlayer)) then
+
+		null = _x addEventHandler
+		[
+			"killed",
+			{
+				params ["_unit"];
+				_unit removeEventHandler ["Killed", _thisEventHandler];
+
+				null = _this spawn
 				{
-				if (!isMultiPlayer) then
+					params ["_unit", "_killer"];
+
+					null = [_unit] remoteExec ["A3A_fnc_postmortem", 2];
+
+					if ((isPlayer _killer) && {
+						(side _killer == teamPlayer) })
+					then
 					{
-					_nul = [0,20] remoteExec ["A3A_fnc_resourcesFIA",2];
-					_killer addRating 1000;
-					};
-				}
-			else
-				{
-				if (side _killer == Occupants) then
-					{
-					_nul = [0.25,0,getPos _victim] remoteExec ["A3A_fnc_citySupportChange",2];
-					[[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige",2];
+						if (!isMultiPlayer)
+						then
+						{
+							null = [0, 20] remoteExec ["A3A_fnc_resourcesFIA", 2];
+							_killer addRating 1000;
+						};
 					}
-				else
+					else
 					{
-					if (side _killer == Invaders) then {[[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige",2]};
+						if (side _killer == Occupants)
+						then
+						{
+							null = [0.25, 0, getPos _unit] remoteExec ["A3A_fnc_citySupportChange", 2];
+							null = [[-1, 30], [0, 0]] remoteExec ["A3A_fnc_prestige", 2];
+						}
+						else
+						{
+							if (side _killer == Invaders)
+							then { null = [[0, 0], [-1, 30]] remoteExec ["A3A_fnc_prestige", 2]; };
+						};
 					};
+
+					_unit setVariable ["spawner", nil, true];
 				};
-			_victim setVariable ["spawner",nil,true];
-			}];
+			}
+		];
+
 		};
 	} forEach _unitsX;
 	theBoss hcSetGroup [_groupX];
