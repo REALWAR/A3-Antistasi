@@ -54,19 +54,24 @@ while {(alive _gunner)} do
 					_gunner setVariable ["maneuvering",true];
 					_gunner playMoveNow selectRandom medicAnims;
 					_gunner setVariable ["timeToBuild",time + 30];
-					_gunner addEventHandler ["AnimDone",
+
+					null = _gunner addEventHandler
+					[
+						"AnimDone",
 						{
-						private _gunner = _this select 0;
-						if ((time > _gunner getVariable ["timeToBuild",0]) or !([_gunner] call A3A_fnc_canFight)) then
+							private _gunner = _this #0;
+
+							if ((time > _gunner getVariable ["timeToBuild", 0]) || {
+								!([_gunner] call A3A_fnc_canFight) })
+							then
 							{
-							_gunner removeEventHandler ["AnimDone",_thisEventHandler];
-							_gunner setVariable ["maneuvering",false];
+								_gunner removeEventHandler ["AnimDone", _thisEventHandler];
+								_gunner setVariable ["maneuvering", false];
 							}
-						else
-							{
-							_gunner playMoveNow selectRandom medicAnims;
-							};
-						}];
+							else { _gunner playMoveNow selectRandom medicAnims; };
+						}
+					];
+
 					waitUntil {sleep 0.5; !(_gunner getVariable ["maneuvering",false])};
 					_gunner setVariable ["timeToBuild",nil];
 					if ([_gunner] call A3A_fnc_canFight) then
