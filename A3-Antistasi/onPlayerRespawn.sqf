@@ -11,12 +11,17 @@ waitUntil {alive player};
 //This is a workaround that re-assigns curator to the player if their body is deleted.
 //It will only run on LAN hosted MP, where the hoster is *always* admin, so we shouldn't run into any issues.
 if (isServer) then {
-	_oldUnit addEventHandler ["Deleted", {
-		[] spawn {
-			sleep 1;		// should ensure that the bug unassigns first
-			{ player assignCurator _x } forEach allCurators;
+
+	null = _oldUnit addEventHandler
+	[
+		"Deleted",
+		{
+			null = [] spawn {
+				sleep 1;		// should ensure that the bug unassigns first
+				{ player assignCurator _x } forEach allCurators;
+			};
 		}
-	} ];
+	];
 };
 
 _nul = [_oldUnit] spawn A3A_fnc_postmortem;
@@ -86,153 +91,206 @@ if (side group player == teamPlayer) then
 	//Give them a map, in case they're commander and need to replace petros.
 	_newUnit linkItem "ItemMap";
 	if (!isPlayer (leader group player)) then {(group player) selectLeader player};
-	player addEventHandler ["FIRED",
-		{
-		_player = _this select 0;
-		if (captive _player) then
-			{
-			if ({if (((side _x == Occupants) or (side _x == Invaders)) and (_x distance player < 300)) exitWith {1}} count allUnits > 0) then
-				{
-				[_player,false] remoteExec ["setCaptive",0,_player];
-				_player setCaptive false;
-				}
-			else
-				{
-				_city = [citiesX,_player] call BIS_fnc_nearestPosition;
-				_size = [_city] call A3A_fnc_sizeMarker;
-				_dataX = server getVariable _city;
-				if (random 100 < _dataX select 2) then
-					{
-					if (_player distance getMarkerPos _city < _size * 1.5) then
-						{
-						[_player,false] remoteExec ["setCaptive",0,_player];
-						_player setCaptive false;
-						if (vehicle _player != _player) then
-							{
-							{if (isPlayer _x) then {[_x,false] remoteExec ["setCaptive",0,_x]; _x setCaptive false}} forEach ((assignedCargo (vehicle _player)) + (crew (vehicle _player)) - [_player]);
-							};
-						};
-					};
-				};
-			}
-		}
-		];
 
-	player addEventHandler ["InventoryOpened",
+	null = player addEventHandler
+	[
+		"FIRED",
 		{
-		private ["_playerX","_containerX","_typeX"];
-		_control = false;
-		_playerX = _this select 0;
-		if (captive _playerX) then
+			null = _this spawn
 			{
-			_containerX = _this select 1;
-			_typeX = typeOf _containerX;
-			if (((_containerX isKindOf "CAManBase") and (!alive _containerX)) or (_typeX == NATOAmmoBox) or (_typeX == CSATAmmoBox)) then
+				params ["_player"];
+
+				if !(captive _player) exitWith {};
+
+				if (
+					allUnits findIf
+					{
+						(_x distance player < 300) && {
+						(side _x == Occupants) || {
+						(side _x == Invaders) }}
+					} != -1
+				)
+				then
 				{
-				if ({if (((side _x== Invaders) or (side _x== Occupants)) and (_x knowsAbout _playerX > 1.4)) exitWith {1}} count allUnits > 0) then
-					{
-					[_playerX,false] remoteExec ["setCaptive",0,_playerX];
-					_playerX setCaptive false;
-					}
+					null = [_player, false] remoteExec ["setCaptive", 0, _player];
+					_player setCaptive false;
+				}
 				else
-					{
-					_city = [citiesX,_playerX] call BIS_fnc_nearestPosition;
+				{
+					_city = [citiesX, _player] call BIS_fnc_nearestPosition;
 					_size = [_city] call A3A_fnc_sizeMarker;
 					_dataX = server getVariable _city;
-					if (random 100 < _dataX select 2) then
+
+					if ((random 100 < _dataX #2) && {
+						(_player distance getMarkerPos _city < _size * 1.5) })
+					then
+					{
+						null = [_player, false] remoteExec ["setCaptive", 0, _player];
+						_player setCaptive false;
+
+						if (vehicle _player != _player)
+						then
 						{
-						if (_playerX distance getMarkerPos _city < _size * 1.5) then
 							{
-							[_playerX,false] remoteExec ["setCaptive",0,_playerX];
-							_playerX setCaptive false;
-							};
+								if (isPlayer _x)
+								then
+								{
+									null = [_x, false] remoteExec ["setCaptive", 0, _x];
+									_x setCaptive false;
+								}
+							} forEach ((assignedCargo (vehicle _player)) + (crew (vehicle _player)) - [_player]);
 						};
 					};
 				};
 			};
-		_control
-		}];
-	/*
-	player addEventHandler ["InventoryClosed",
+		}
+	];
+
+	null = player addEventHandler
+	[
+		"InventoryOpened",
 		{
-		_control = false;
-		_uniform = uniform player;
-		_typeSoldier = getText (configfile >> "CfgWeapons" >> _uniform >> "ItemInfo" >> "uniformClass");
-		_sideType = getNumber (configfile >> "CfgVehicles" >> _typeSoldier >> "side");
-		if ((_sideType == 1) or (_sideType == 0) and (_uniform != "")) then
+			null = _this spawn
 			{
-			if !(player getVariable ["disguised",false]) then
-				{
-				hint "You are wearing an enemy uniform, this will make the AI attack you. Beware!";
-				player setVariable ["disguised",true];
-				player addRating (-1*(2001 + rating player));
-				};
-			}
-		else
+
+			};
+			private _playerX = _this 0;
+
+			if !(captive _playerX) exitWith {};
+
+			private _containerX = _this #1;
+			private _typeX = typeOf _containerX;
+
+			if ((_containerX isKindOf "CAManBase") && {
+				!(alive _containerX) || {
+				(_typeX == NATOAmmoBox) || {
+				(_typeX == CSATAmmoBox) }}})
+			then
 			{
-			if (player getVariable ["disguised",false]) then
+				if (
+					allUnits findIf
+					{
+						(_x knowsAbout _playerX > 1.4) && {
+						(side _x == Invaders) || {
+						(side _x == Occupants) }}
+					} != -1
+				)
+				then
 				{
-				hint "You removed your enemy uniform";
-				player addRating (rating player * -1);
+					null = [_playerX, false] remoteExec ["setCaptive", 0, _playerX];
+					_playerX setCaptive false;
+				}
+				else
+				{
+					_city = [citiesX, _playerX] call BIS_fnc_nearestPosition;
+					_size = [_city] call A3A_fnc_sizeMarker;
+					_dataX = server getVariable _city;
+
+					if ((random 100 < _dataX #2) && {
+						(_playerX distance getMarkerPos _city < _size * 1.5) })
+					then
+					{
+						null = [_playerX, false] remoteExec ["setCaptive", 0, _playerX];
+						_playerX setCaptive false;
+					};
 				};
 			};
-		_control
-		}];
-		*/
+
+			false
+		}
+	];
+
 	if (hasInterface) then {
 		[player] call A3A_fnc_punishment_FF_addEH;
 	};
-	player addEventHandler ["HandleHeal",
+
+	null = player addEventHandler
+	[
+		"HandleHeal",
 		{
-		_player = _this select 0;
-		if (captive _player) then
+			null = _this spawn
 			{
-			if ({((side _x== Invaders) or (side _x== Occupants)) and (_x knowsAbout player > 1.4)} count allUnits > 0) then
+				params ["_player"];
+
+				if (captive _player)
+				then
 				{
-				[_player,false] remoteExec ["setCaptive",0,_player];
-				_player setCaptive false;
-				}
-			else
-				{
-				_city = [citiesX,_player] call BIS_fnc_nearestPosition;
-				_size = [_city] call A3A_fnc_sizeMarker;
-				_dataX = server getVariable _city;
-				if (random 100 < _dataX select 2) then
-					{
-					if (_player distance getMarkerPos _city < _size * 1.5) then
+					if (
 						{
-						[_player,false] remoteExec ["setCaptive",0,_player];
+							(_x knowsAbout player > 1.4) && {
+							(side _x == Invaders) || {
+							(side _x == Occupants) }}
+						} != -1
+					)
+					then
+					{
+						null = [_player, false] remoteExec ["setCaptive", 0, _player];
 						_player setCaptive false;
+					}
+					else
+					{
+						_city = [citiesX, _player] call BIS_fnc_nearestPosition;
+						_size = [_city] call A3A_fnc_sizeMarker;
+						_dataX = server getVariable _city;
+
+						if ((random 100 < _dataX #2) && {
+							(_player distance getMarkerPos _city < _size * 1.5) })
+						then
+						{
+							null = [_player, false] remoteExec ["setCaptive", 0, _player];
+							_player setCaptive false;
 						};
 					};
 				};
-			}
-		}
-		];
-	player addEventHandler ["WeaponAssembled",
-		{
-			private _veh = _this select 1;
-			[_veh, teamPlayer] call A3A_fnc_AIVEHinit;		// will flip/capture if already initialized
-			if (_veh isKindOf "StaticWeapon") then {
-				if (not(_veh in staticsToSave)) then {
-					staticsToSave pushBack _veh;
-					publicVariable "staticsToSave";
-				};
-				_markersX = markersX select {sidesX getVariable [_x,sideUnknown] == teamPlayer};
-				_pos = position _veh;
-				if (_markersX findIf {_pos inArea _x} != -1) then {["Static Deployed", "Static weapon has been deployed for use in a nearby zone, and will be used by garrison militia if you leave it here the next time the zone spawns"] call A3A_fnc_customHint;};
 			};
-		}];
-	player addEventHandler ["WeaponDisassembled",
+		}
+	];
+
+	null = player addEventHandler
+	[
+		"WeaponAssembled",
+		{
+			null = _this spawn
 			{
-			_bag1 = _this select 1;
-			_bag2 = _this select 2;
-			//_bag1 = objectParent (_this select 1);
-			//_bag2 = objectParent (_this select 2);
-			[_bag1] remoteExec ["A3A_fnc_postmortem", 2];
-			[_bag2] remoteExec ["A3A_fnc_postmortem", 2];
-			}
-		];
+				params ["_veh"];
+
+				null = [_veh, teamPlayer] call A3A_fnc_AIVEHinit;		// will flip/capture if already initialized
+
+				if (_veh isKindOf "StaticWeapon")
+				then
+				{
+					if !(_veh in staticsToSave)
+					then
+					{
+						staticsToSave pushBack _veh;
+						publicVariable "staticsToSave";
+					};
+
+					_markersX = markersX select { sidesX getVariable [_x, sideUnknown] == teamPlayer };
+					_pos = position _veh;
+
+					if (_markersX findIf {_pos inArea _x} != -1)
+					then { null = ["Static Deployed", "Static weapon has been deployed for use in a nearby zone, and will be used by garrison militia if you leave it here the next time the zone spawns"] call A3A_fnc_customHint; };
+				};
+			};
+		}
+	];
+
+	null = player addEventHandler
+	[
+		"WeaponDisassembled",
+		{
+			null = _this spawn
+			{
+				_bag1 = _this #1;
+				_bag2 = _this #2;
+
+				null = [_bag1] remoteExec ["A3A_fnc_postmortem", 2];
+				null = [_bag2] remoteExec ["A3A_fnc_postmortem", 2];
+			};
+		}
+	];
+
 	[true] spawn A3A_fnc_reinitY;
 	[player] execVM "OrgPlayers\unitTraits.sqf";
 	[] spawn A3A_fnc_statistics;
